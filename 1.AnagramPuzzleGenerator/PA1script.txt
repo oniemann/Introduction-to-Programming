@@ -1,0 +1,114 @@
+Script started on Sat 11 Oct 2014 03:22:19 PM PDT
+You are currently using 0% (94.0 KiB) of your 488.3 MiB quota.
+]0;oniemann@unix1:prog1[oniemann@unix1 prog1]$ ls
+Anagram.class                 AnagramPuzzleGenerator.java   PA1script.txt   temp
+AnagramPuzzleGenerator1.java  AnagramPuzzleGenerator.java~  statesList.txt
+]0;oniemann@unix1:prog1[oniemann@unix1 prog1]$ cat AnagramPuzzleGenerator1.java
+/** 
+ *Author: Okeefe Niemann (oniemann@ucsc.edu)
+ *Class: CMPS 12A
+ *Student ID: 1281465
+ *Date: 10/11/2014
+ *Description: This program creates a game in which the player is given an anagram
+  from a given list and is given three chances to solve it.
+*/
+
+import java.util.*;
+import java.io.*;
+
+class Anagram {
+    public static void main(String[] args) throws FileNotFoundException {
+        //scans in the text file and stores the data into array wordbank"
+        Scanner in = new Scanner(new FileInputStream(args[0]));
+        
+        int size = in.nextInt();
+        int i = 0;
+        String[] wordbank = new String[size];
+
+        while ( i < size) {
+            wordbank[i] = in.next();
+            i++;
+        }
+        
+        //randomly selects a state from the list
+        Random rng = new Random();
+        int rnum = rng.nextInt(wordbank.length);
+        String State = wordbank[rnum];
+                
+        /*creates two strings for original word and jumbled word,
+        of which can be manipulated*/
+        StringBuffer original = new StringBuffer(State);  //answer
+        StringBuffer jumbled = new StringBuffer("");      //anagram
+
+        /*randomly selects indices from original word, removes them,
+        then appends them to new string representing the anagram*/
+        for ( i = 0; i < State.length(); i++) {
+            Random rng1 = new Random();
+            int rnum1 = rng1.nextInt(original.length()); //selects random indice from answer
+            char letter = original.charAt(rnum1);
+            jumbled.append(letter);           //appends letter to anagram
+            original.deleteCharAt(rnum1);     //deletes letter from answer
+        }
+        
+        System.out.println("Guess the word!");
+        System.out.printf("Anagram: %s \n\n", jumbled);
+
+        /*player is given three attempts to guess the anagram, receiving a
+        "game over" and the correct answer if unable to guess correctly*/
+        i = 0;  //reinitializes i for next while loop
+
+        while (i < 3) {
+            Scanner scan = new Scanner(System.in);
+            String input = scan.nextLine();
+
+            if (input.equals(State)) {
+                System.out.println("You did it!");
+                break;
+                }
+            else {
+                if (2 - i > 0) {
+                System.out.printf("Remaining Attempts: %d", 2-i);
+                System.out.println("");
+                }
+                else {
+                    System.out.print("\nGame Over\n");
+                    System.out.println("Answer: " + State);
+                }
+            }
+            
+            i++;
+        }
+}
+
+
+} 
+]0;oniemann@unix1:prog1[oniemann@unix1 prog1]$ javac Anagre[KamPussz[K[K[KzzleGenerator.ja[Kava[K[K[K[Kava[K[K[Kjava
+]0;oniemann@unix1:prog1[oniemann@unix1 prog1]$ java Anagram statel[KsList.txt
+Guess the word!
+Anagram: thstmsacauess 
+
+massacheusetts^[[D           usettes^[[D^[[D^[[C                          massache usetts
+You did it!
+]0;oniemann@unix1:prog1[oniemann@unix1 prog1]$ java Anagram statesList.txt
+Guess the word!
+Anagram: sionicsnw 
+
+floria da
+Remaining Attempts: 2
+california
+Remaining Attempts: 1
+me  newmexica o
+
+Game Over
+Answer: wisconsin
+]0;oniemann@unix1:prog1[oniemann@unix1 prog1]$ java Anagram statesList.txt
+Guess the word!
+Anagram: ziaaron 
+
+m alabama
+Remaining Attempts: 2
+arizona
+You did it!
+]0;oniemann@unix1:prog1[oniemann@unix1 prog1]$ ^Dexit
+
+Script done on Sat 11 Oct 2014 03:25:15 PM PDT
