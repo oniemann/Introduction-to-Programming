@@ -1,0 +1,582 @@
+Script started on Sun 07 Dec 2014 01:55:57 AM PST
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/SortingAlgorithmokeefe@okeefe:~/Desktop/CMPS12A/Projects/SortingAlgorithm$ cat Sorting.java
+import java.util.*;
+import java.io.*;
+
+class Sorting {
+	public static void main(String[] args) {
+
+		//prints out  the header
+		System.out.println("/****************************************/");
+		System.out.println("/*         SORT A LIST OF NUMBERS!      */");
+		System.out.println("/****************************************/");
+		System.out.println("");
+
+		//scans in the list size as well as the range of numbers
+		System.out.printf("How big do you want your list? ");
+		Scanner scan = new Scanner(System.in);
+		int indices = scan.nextInt();
+		System.out.printf("Largest possible number? ");
+		int biggestnumber = scan.nextInt();
+
+		//creates a list of random numbers to the specification of the input
+		int[] sorted = new int[indices];
+		System.out.println("");
+
+		for (int i = 0; i < sorted.length; i++) {
+			Random rng = new Random();
+			int rnum = rng.nextInt(biggestnumber);
+			sorted[i] = rnum;
+		}
+
+		//displays the unsorted list in all of its glory
+		System.out.printf("Unsorted list:\n");
+		System.out.println(Arrays.toString(sorted));
+		System.out.printf("\n");
+
+		int i = 0;
+
+		/*uses methods "min" and "swap" to sort the randomly generated list,
+		incrementing the beginning indice to test for the minimum by one until 
+		"i" equals the length of the randomly generated number list*/
+		while (i < sorted.length) {
+			int minimum = min(i, sorted, indices);
+			int swap = swap(i, minimum, sorted);
+			sorted[i] = swap;
+			i++;
+		}
+
+		//outputs the list in all of its sorted glory
+		System.out.printf("Sorted List:\n");
+		System.out.println(Arrays.toString(sorted));
+		System.out.println("");
+
+	}
+
+	/*goes through the list beginning at indice "i", finding the lowest term
+	throughout and returning its indice to main*/
+	static int min(int i, int[] sorted, int indices) {
+
+		int rmin = sorted[i];
+		int y = 0;
+		int j = i;
+
+		while (j < indices) {
+			if (sorted[j] <= rmin) {
+				rmin = sorted[j];
+				y = j;
+			}
+
+		j++;
+		}
+		
+		return y;
+	}
+
+	/*takes the indice of the lowest value in the list and swaps it with indice
+	"i". The method then returns the list, just a little more sorted than
+	before.*/
+	static int swap(int i, int minimum, int[] sorted) {
+		int temp = sorted[minimum];
+		sorted[minimum] = sorted[i];
+		sorted[i] = temp;
+
+		return sorted[i];
+	}
+}]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/SortingAlgorithmokeefe@okeefe:~/Desktop/CMPS12A/Projects/SortingAlgorithm$ cd ..
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projectsokeefe@okeefe:~/Desktop/CMPS12A/Projects$ cd Chapter6
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ ls
+Card.class      ChangeTest.class   CounterTest.java  MakingChange.class  Rank.class      Suit.class
+CardTest.class  ChangeTest.java    Days$1.class      MakingChange.java   SameName.class  TestDays$1.class
+CardTest.java   Counter.class      Days.class        MyList.java         SameName.java   TestDays.class
+Change.class    CounterTest.class  Deck.class        Person.class        Suit$1.class    TestDays.java
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ cat Cardt[KTest.java
+public class CardTest{
+    public static void main(String[] args) {
+        Deck deck = new Deck();
+        System.out.println("\nNew Deck\n" + deck);
+        deck.shuffle();
+        System.out.println("\nNew Shuffle\n" + deck);
+        deck.shuffle();
+        System.out.println("\nNew Shuffle\n" + deck);
+    }
+}
+
+class Deck {
+    Card[] deck;      //creates the deck as an array of card objects
+
+    Deck() {                      //creates the card array, with all 4 suits
+        deck = new Card[52];
+        Suit suit = Suit.spades;
+        Rank rank = Rank.ace;
+
+        for(int i = 0; i < deck.length; i++){
+            if (i %13 == 0) {
+                suit = suit.next();
+                rank = Rank.ace;
+            }
+
+            deck[i] = new Card(suit, rank);
+            rank = rank.next();
+        }
+    }
+
+    void shuffle() {
+        for(int i = 0; i < deck.length; i++) {
+            int k = (int)(Math.random() * 52);
+            Card t = deck[i];
+            deck[i] = deck[k];
+            deck [k] = t;
+        }
+    }
+
+    /*Pseudocode for "Shuffle":
+        randomly select one card from the deck
+            and swap it with the first card
+        randomly select another card from the deck
+            and swap it with the second card
+        continue until this has been done 52 times*/
+
+    public String toString() {
+        String t = "";
+        for(int i = 0; i < 52; i++) {
+            if ((i + 1) % 4 == 0)    //prints new line for each four card values
+                t = t + deck[i] + "\n";
+            else                    
+                t = t + deck[i] + " ";
+        }
+
+        return t + "\n";
+    }
+}
+
+//class card gives each card a suit and a rank
+class Card {
+    Suit suit;
+    Rank rank;
+
+    Card(Suit s, Rank r) {
+        suit = s;
+        rank = r;
+    }
+    Card(Card c) {
+        suit = c.suit;
+        rank = c.rank;
+    }
+
+    public String toString() {
+        return rank + ":" + suit;
+    }
+}
+
+//below enum keeps track of the suit of card, with a method to change suit
+enum Suit {
+    clubs, diamonds, hearts, spades;
+
+    Suit next() {
+        switch(this) {
+            case clubs: return diamonds;
+            case diamonds: return hearts;
+            case hearts: return spades;
+            default: return clubs;
+        }
+    }
+}
+
+//keeps track of rank of cards as well as going to next rank
+enum Rank {
+    joker, ace, two, three, four, five, six, seven, eight, nine, ten, jack,
+    queen, king;
+
+    Rank next() {
+        switch(ordinal()) {
+            case 0: return ace;
+            case 1: return two;
+            case 2: return three;
+            case 3: return four;
+            case 4: return five;
+            case 5: return six;
+            case 6: return seven;
+            case 7: return eight;
+            case 8: return nine;
+            case 9: return ten;
+            case 10: return jack;
+            case 11: return queen;
+            case 12: return king;
+            default: return joker;
+        }
+    }
+}]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ ls
+Card.class      ChangeTest.class   CounterTest.java  MakingChange.class  Rank.class      Suit.class
+CardTest.class  ChangeTest.java    Days$1.class      MakingChange.java   SameName.class  TestDays$1.class
+CardTest.java   Counter.class      Days.class        MyList.java         SameName.java   TestDays.class
+Change.class    CounterTest.class  Deck.class        Person.class        Suit$1.class    TestDays.java
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ cat ChangeTEst[K[K[Kest.java
+import java.util.*;
+import java.io.*;
+
+public class ChangeTest {
+    public static void main(String[] args) {
+        Change c1 = new Change(10, 3, 4, 3);
+        Change c2 = new Change(7, 2, 2, 1);
+        Change sum = c1.add(c2);
+        Change difference = Change.subtract(c1, c2);
+        System.out.println("sum: " + sum);
+        System.out.println("difference: " + difference);
+    }
+
+
+}]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ ls
+Card.class      ChangeTest.class   CounterTest.java  MakingChange.class  Rank.class      Suit.class
+CardTest.class  ChangeTest.java    Days$1.class      MakingChange.java   SameName.class  TestDays$1.class
+CardTest.java   Counter.class      Days.class        MyList.java         SameName.java   TestDays.class
+Change.class    CounterTest.class  Deck.class        Person.class        Suit$1.class    TestDays.java
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ cat CounterTest.java
+class CounterTest {
+    public static  void main(String[] args) {
+        Counter c1 = new Counter(5);
+        Counter c2 = new Counter();
+        Counter c3 = new Counter();
+
+        c1.click();
+        c3.click();
+        
+        int i = 0;
+
+        while(i < 155){
+            c2.click();
+            ++i;
+        }
+
+        System.out.println("Counter1 value is: " + c1.get());
+        System.out.println("Counter2 value is: " + c2.get());
+        System.out.println("Counter3 value is: " + c3.get());
+        c1.reset();
+        System.out.println("After resetting, Counter1 value is: " + c1.get());
+        System.out.println("The number of counters declared is: " + c1.howMany());
+    }
+}
+
+class Counter {
+    //instance variable, visible to all methods in this class
+    private int value;
+
+    //universal to class, i.e. holds the same value in objects c1, c2, c3
+    private static int howMany = 0;
+
+    /*constructors, takes into account conditions where there is/isn't an
+    argument passed into "new Counter()".*/
+    public Counter() {
+        howMany++; 
+    }
+  
+    public Counter(int v) {
+        value = v % MODULUS;
+        howMany++;
+    }
+
+    //instance method, doesn't do anything but declare intitial value for 
+    //instance variable "value"
+    public void reset() {
+        value = 0;
+    }
+
+    //accessor method, returns integer "value"
+    public int get() {
+        return value;
+    }
+
+    //mutator method, manipulates instance variable "value"
+    public void click() {
+        value = (value + 1) % MODULUS;
+    }
+
+    public static int howMany() {
+        return howMany;
+    }
+
+    private static final int MODULUS = 100;
+}]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ ls
+Card.class      ChangeTest.class   CounterTest.java  MakingChange.class  Rank.class      Suit.class
+CardTest.class  ChangeTest.java    Days$1.class      MakingChange.java   SameName.class  TestDays$1.class
+CardTest.java   Counter.class      Days.class        MyList.java         SameName.java   TestDays.class
+Change.class    CounterTest.class  Deck.class        Person.class        Suit$1.class    TestDays.java
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ cat MakingChange.java
+import java.util.*;
+
+public class MakingChange {
+    public static void main(String[] args) {
+        System.out.println("How much money owed?");
+        Scanner scan = new Scanner(System.in);
+        double owed = scan.nextDouble();
+        System.out.println("How much money paid?");
+        double paid = scan.nextDouble();
+        System.out.printf("%nYou owed $%.2f%n", owed);
+        System.out.printf("You gave me $%.2f%n", paid);
+        System.out.println("Your change is " + Change.makeChange(paid, owed));
+
+    }
+}
+
+class Change {
+    private int dollars, quarters, dimes, pennies;
+    private double total;
+
+    /*was only using abbreviations (dlr,qrtr,dm,pen) for the formal parameters
+    to avoid them having conflict with the names of instance variables
+    ---> using "this" eliminates the need for alternative names while still
+    having the ability to access the instance variables
+    ---> useful for when you need to pass a reference to "this" object to some
+    other method. Without the "this" reference, couldn't pass the current object
+    to another method*/
+    Change(int dollars, int quarters, int dimes, int pennies) {
+        this.dollars = dollars;
+        this.quarters = quarters;
+        this.dimes = dimes;
+        this.pennies = pennies;
+        total = dollars + .25 * quarters + .1 * dimes + .01 * pennies;
+    }
+
+    static Change makeChange(double paid, double owed) {
+        double diff = owed - paid;
+        int dollars, quarters, dimes, pennies;
+        dollars = (int)diff;
+        pennies = (int)Math.round((diff-dollars) * 100);
+        quarters = pennies / 25;
+        pennies -= 25 * quarters;
+        dimes = pennies / 10;
+        pennies  -= 10 * dimes;
+        return new Change(dollars, quarters, dimes, pennies);
+    }
+
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        Formatter out = new Formatter(result);
+        out.format("$%.2f%n%d dollars%n%d quarters%n" + "%d dimes%n%d pennies%n",
+            total, dollars, quarters, dimes, pennies);
+        return result.toString();
+    }
+
+    public Change add(Change addend) {
+        Change result = new Change(dollars + addend.dollars, quarters + addend.quarters,
+            dimes + addend.dimes, pennies + addend.pennies);
+        return result;
+    }
+
+    public static Change subtract(Change augend, Change addend) {
+        Change result = new Change(augend.dollars - addend.dollars,
+            augend.quarters - addend.quarters, augend.dimes - addend.dimes,
+            augend.pennies - addend.pennies);
+        return result;
+    }
+}]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ ls
+Card.class      ChangeTest.class   CounterTest.java  MakingChange.class  Rank.class      Suit.class
+CardTest.class  ChangeTest.java    Days$1.class      MakingChange.java   SameName.class  TestDays$1.class
+CardTest.java   Counter.class      Days.class        MyList.java         SameName.java   TestDays.class
+Change.class    CounterTest.class  Deck.class        Person.class        Suit$1.class    TestDays.java
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ cat SameName.java
+import java.util.*;
+import java.io.*;
+
+class SameName {
+    public static void main(String[] args) {
+        //declares and constructs a person
+        Person p1 = new Person();
+        Person p2 = new Person();
+        p1.name = "Okeefe Niemann";
+        p2.name = "Okeefe Niemann";
+        p1.phoneNumber = "(904) 347-3589";
+        p2.phoneNumber = "(904) 347-4767";
+        
+        print(p1);
+        print(p2);
+
+        if(sameNumber(p1, p2))
+            System.out.println("These guys have the same number, so they're the same person..");
+        else
+            System.out.println("These guys have different numbers, so they're different people..");
+    }
+
+    static void print(Person p) {
+        System.out.println(p.name + "'s phone number is: " + p.phoneNumber);
+    }
+    static boolean sameNumber(Person p, Person q) {
+        return p.phoneNumber.equals(q.name);
+    }
+}
+
+class Person {
+    //below two variables referred to as "data member" or "field"
+    String name;
+    String phoneNumber;
+}]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ ls
+Card.class      ChangeTest.class   CounterTest.java  MakingChange.class  Rank.class      Suit.class
+CardTest.class  ChangeTest.java    Days$1.class      MakingChange.java   SameName.class  TestDays$1.class
+CardTest.java   Counter.class      Days.class        MyList.java         SameName.java   TestDays.class
+Change.class    CounterTest.class  Deck.class        Person.class        Suit$1.class    TestDays.java
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ cat TestDats.[K[K[Kys.java
+import java.util.*;
+import java.io.*;
+
+class TestDays {
+    public static void main(String[] args) {
+        Days today = Days.friday;
+
+        System.out.println("Today is: " + today);
+        //next two lines refer to instance methods located in enum "Days"
+        System.out.println("Tomorrow is: " + today.nextDay());
+        System.out.println("Yesterday was: " + today.priorDay());
+        System.out.println("");
+        //Days.values() iterates over enum "days"
+        for(Days d: Days.values())
+            //d.name() converts number to name in enum based on name's ordinal #
+            System.out.println(d.name() + " is on the weekend is " + d.isWeekend());
+    }
+
+}
+
+enum Days {
+    sunday, monday, tuesday, wednesday, thursday, friday, saturday;
+    public Days nextDay() {
+        /*below  switches shorthand for "this.ordinal()", which converts the
+       value of type "day" into an integer.*/
+        switch(this){
+            case sunday:    return(Days.monday);
+            case monday:    return(Days.tuesday);
+            case tuesday:   return(Days.wednesday);
+            case wednesday: return(Days.thursday);
+            case thursday:  return(Days.friday);
+            case friday:    return(Days.saturday);
+            default:        return(Days.sunday);
+        }
+    }
+
+    public Days priorDay() {
+        switch(this){
+            case sunday:    return(Days.saturday);
+            case monday:    return(Days.sunday);
+            case tuesday:   return(Days.monday);
+            case wednesday: return(Days.tuesday);
+            case thursday:  return(Days.wednesday);
+            case friday:    return(Days.thursday);
+            default:        return(Days.friday);
+        }
+    }
+
+    //checks if a given day is on the weekend ---> returns "true" or "false"
+    public boolean isWeekend() {
+        return (this.equals(sunday) || this.equals(saturday));
+    }
+}]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter6okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter6$ cd ..
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projectsokeefe@okeefe:~/Desktop/CMPS12A/Projects$ cd Chapter7
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter7okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter7$ ls
+[0m[01;34mjbd[0m           Person$Gender.class  StudentTest.class  Student$YearinSchool.class
+Person.class  Student.class        StudentTest.java
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter7okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter7$ cat Str[KudentTest.java
+class StudentTest {
+    public static void main(String[] args) {
+        Student student = new Student("Okeefe Niemann");
+        student.setAge(22);
+        student.setGender(Person.Gender.M);
+        student.setCollege("UCSC");
+        student.setYear(Student.YearinSchool.senior);
+        student.setGPA(3.7);
+        System.out.println(student.toString());
+
+        Person anyPerson = student;
+        System.out.println(anyPerson.toString());
+    }
+}
+
+//class describes a person by name, age, and gender
+class Person{
+    Person(String name) {this.name = name;}
+
+    void setAge(int age) {this.age = age;}
+    void setGender(Gender gender) {this.gender = gender;}
+    void setName(String name) {this.name = name;}
+
+    int getAge() {return age;}
+    Gender getGender() {return gender;}
+    String getName() {return name;}
+
+    public String toString() {
+        return("Name: " + name + ", Age: " + age + ", Gender: " + gender);
+    }
+
+    static enum Gender{ M, F }
+
+    private String name;
+    private int age;
+    private Gender gender;
+}
+
+//below is a subclass extending from the above "superclass"
+class Student extends Person {
+    Student(String name) {super(name);}  //gives the subclass the constructor of the superclass
+    
+    void setCollege(String college) {this.college = college;}
+    void setGPA(double gpa) {this.gpa = gpa;}
+    void setYear(YearinSchool year) {this.year = year;}
+
+    String getCollege() {return college;}
+    double getGPA() {return gpa;}
+    YearinSchool getYear() {return year;}
+
+    /*below overrides the same method in the superclass, but can access the return method
+    from the superclass by syntax  "super.toString"*/
+    public String toString() {
+        return(super.toString() + "\n  " + "College: " + college + ", GPA: " + gpa + ", Year: " + year);
+    }
+
+    static enum YearinSchool {freshman, sophomore, junior, senior}
+
+    private String college = "Unknown";
+    private double gpa;
+    private YearinSchool year;
+}]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter7okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter7$ cd ..
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projectsokeefe@okeefe:~/Desktop/CMPS12A/Projects$ ls
+[0m[01;34mChapter1[0m  [01;34mChapter6[0m  [01;34mChapter7[0m  [01;34mSortingAlgorithm[0m
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projectsokeefe@okeefe:~/Desktop/CMPS12A/Projects$ cd Chapter1
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter1okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter1$ ls
+Question5.java
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter1okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter1$ cat Question5.java 
+import java.util.*;
+
+class Ch2e1 {
+	public static void main(String[] args) {
+		int count = 1, i = 3;
+		System.out.println("count + i = ", count + i);
+	}
+}]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projects/Chapter1okeefe@okeefe:~/Desktop/CMPS12A/Projects/Chapter1$ cd ..
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projectsokeefe@okeefe:~/Desktop/CMPS12A/Projects$ ls
+[0m[01;34mChapter1[0m  [01;34mChapter6[0m  [01;34mChapter7[0m  [01;34mSortingAlgorithm[0m
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/Projectsokeefe@okeefe:~/Desktop/CMPS12A/Projects$ cd ..
+]0;okeefe@okeefe: ~/Desktop/CMPS12Aokeefe@okeefe:~/Desktop/CMPS12A$ ls
+[0m[01;34m1.AnagramPuzzleGenerator[0m  [01;34m3.Craps[0m  [01;34mAscii Alphabet[0m  HelloWorld.class  [01;34mProjects[0m
+[01;34m2.FindingAnagrams[0m         [01;34m4.TTT3D[0m  [01;34mBookProblems[0m    HelloWorld.java
+]0;okeefe@okeefe: ~/Desktop/CMPS12Aokeefe@okeefe:~/Desktop/CMPS12A$ cd BookProblems/
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/BookProblemsokeefe@okeefe:~/Desktop/CMPS12A/BookProblems$ ls
+ArraySum2.class  Chapter5.java
+]0;okeefe@okeefe: ~/Desktop/CMPS12A/BookProblemsokeefe@okeefe:~/Desktop/CMPS12A/BookProblems$ cat Chapter5.java 
+import java.util.*;
+import java.io.*;
+
+class ArraySum2 {
+	public static void main(String[] args) {
+		int[] data1 = {22, 15, 16, 6, 12, 14};
+		int[] data2 = {13, 76, 88, 109, 222, 666};
+
+		System.out.println("sum of data1: " + sum(data1));
+	}
+
+	static int sum(int[] a) {
+		int sum = 0;
+		for (int d: a)
+			sum += d;
+
+		return sum;
+	}
+}]0;okeefe@okeefe: ~/Desktop/CMPS12A/BookProblemsokeefe@okeefe:~/Desktop/CMPS12A/BookProblems$ exit
+
+Script done on Sun 07 Dec 2014 01:58:53 AM PST

@@ -1,0 +1,519 @@
+/***************************************************************************
+*Author: Okeefe Niemann
+*Date: 12/7/2014
+*Class: CMPS12A
+*Assignment 4
+*
+*Description: This program is an interactive 3D Tic-Tac-Toe game where the 
+              player must achieve four in a row to win.
+****************************************************************************/
+
+import java.util.*;
+import java.io.*;
+
+class TTT3Dp {
+    public static void main(String[] args) throws FileNotFoundException {
+        Board table = new Board(args[0]);
+        boolean game = false;
+        int comp = 5, player = 1, turn = 0;
+        
+        while(!game) {
+           
+            //conditional keeps track of who's turn it is
+            if(turn % 2 == 0) {
+                table.playerMove();
+            }
+
+            /*game AI runs through a hierarchy as follows:
+                1: checks if can make four in a row
+                2: blocks player if they have three in a row
+                3: checks if player can make a tree (i.e. have three in a row
+                   two different ways) and blocks if so
+                4: checks if it can make a tree
+                5: checks if it can make two
+                6: if all of above fails, plays a random unfilled row
+                7: if there's no unfilled row, computer declares a draw for lack
+                   of potential winning moves.
+            */
+            else {
+                System.out.println("Computer's Turn:");
+                if(!table.threeInRow(comp)) {
+                    if(!table.threeInRow(player)) {
+                        if (!table.tree(player)) {
+                            if (!table.tree(comp)) {
+                                if (!table.compTwoinRow()) {
+                                    if(!table.lastResort()){
+                                        table.draw();
+                                        game = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            /*program checks to see if a move done this turn won the game or*/
+            if(table.winningMove())
+                game = true;
+
+            turn++;
+        }
+    }
+}
+
+
+class Board {
+
+    int board[][][];
+    
+    //constructor creates the board using a startupfile
+    Board(String args) throws FileNotFoundException {
+        board = new int[4][4][4];
+        Scanner scan = new Scanner(new FileInputStream(args));
+        int row = 3;
+            
+        for(int i = 3; i >= 0; i--) {
+            int level = 3;
+        
+            for(int j = 3; j >= 0; j--) {
+
+            //below diagonalizes visuals for 3D effect
+                for(int l = j; l >= 0; l--)
+                    System.out.print(" ");
+
+                System.out.printf("%d%d ", row, level);
+                level -= 1;
+
+            /*program scans in the provided start up file and creates the
+              initital conditions of the board*/
+                for(int k = 0; k < 4; k++) {
+                    board[i][j][k] = scan.nextInt();
+
+                    if(board[i][j][k] == 0)
+                        System.out.printf("_ ");
+                    else if(board[i][j][k] == player)
+                        System.out.printf("X ");
+                    else if(board[i][j][k] == comp)
+                        System.out.printf("O ");
+                }
+
+                System.out.printf("\n");
+            }
+
+            row -= 1;
+            System.out.printf("\n");
+        }
+    }
+
+    //method updates the board every time a move is made
+    public void update() {        
+        int row = 3;
+            
+        for(int i = 3; i >= 0; i--) {
+            int level = 3;
+            
+            for(int j = 3; j >= 0; j--) {
+
+            //below diagonalizes visuals for 3D effect
+                for(int l = j; l >= 0; l--)
+                    System.out.print(" ");
+
+                System.out.printf("%d%d ", row, level);
+                level -= 1;
+
+                //prints out an updated version of the board
+                for(int k = 0; k < 4; k++) {
+                    if(board[i][j][k] == dash)
+                        System.out.printf("_ ");
+                    else if(board[i][j][k] == player)
+                        System.out.printf("X ");
+                    else if(board[i][j][k] == comp)
+                        System.out.printf("O ");
+                }
+
+                System.out.printf("\n");
+            }
+
+            row -= 1;
+            System.out.printf("\n");
+        }
+    }
+
+    //method contains all code pertaining to the legalities of user input
+    public void playerMove() {
+        System.out.println("Type your move  as one three digit number (lrc)");
+        
+        boolean outrange = true;
+
+        while(outrange) {
+            Scanner play = new Scanner(System.in);
+            int usrinput = play.nextInt();
+            List<Integer> list = new ArrayList<Integer>();
+            int length = 0;
+            int f = usrinput;
+            
+            //splits the inputted value into 3 individual integers to check if
+            //the indices lay inside the 4x4x4 cube 
+            while(length < 3) {
+                if(f > 0){
+                    list.add(f % 10);
+                    f /= 10;
+                    length += 1;
+                }
+            
+                else {
+                    list.add(0);
+                    length += 1;
+                }
+            }
+
+            int usrlev = list.get(2);
+            int usrcol = list.get(1);
+            int usrrow = list.get(0);
+            
+            /*if lev/col/row exceeds a value of three or if the inputted value
+            is greater than three digits, the user must resubmit the desired
+            value*/
+            if (list.get(0) > 3 || list.get(1) > 3 || list.get(2) > 3 ||
+                length != 3) { 
+                outrange = true;
+                System.out.println("Out of range, try again.");
+            }
+    
+            //if the spot is already filled, the user must choose other indices
+            else if (board[usrlev][usrcol][usrrow] != 0) {
+                outrange = true;
+                System.out.println("Spot already taken, try again.");
+            }
+            
+            //if requirements are met, board is updated via updateboard method            
+            else {
+                board[usrlev][usrcol][usrrow] = 1;
+                this.update();
+                outrange = false;
+            }
+        }
+    }
+
+    //checks the board to see if the board has any completely filled lines
+    public boolean winningMove() {
+        boolean win = false;
+        int moves = 0;
+
+        /*loops through the potential winning lines, keeping track of their
+          sums*/
+        for(int[][] strategy : lines) {
+            int sum = 0;
+            for(int[] index : strategy) {
+                if(board[index[0]][index[1]][index[2]] == 1)
+                    sum += 1;
+                else if(board[index[0]][index[1]][index[2]] == 5)
+                    sum += 5;
+            }
+
+            /*since each user input equals one, a sum of four needs to be found
+              for a user win*/
+            if(sum == 4) {
+                System.out.println("Wow you win!!!");
+                win = true;
+                return win;
+            }
+
+            /*since each computer input equals five, a sum of twenty needs to be
+              found for a computer win*/
+            else if(sum == 20) {
+                System.out.println("Computer wins");
+                System.out.println("GAME OVER");
+                win = true;
+                return win;
+            }
+        }
+
+        /*below loop and conditional determine if there are any moves left on
+          board, declaring a draw if this is found to be false*/
+        for(int[][] rows : board) {
+            for(int[] cols : rows) {
+                for(int point : cols) {
+                    if(point != 0)
+                        moves += 1;
+                }
+            }
+        }
+
+        //4x4x4 cube will have 64 possible moves
+        if(moves == 64) {
+            System.out.println("Out of moves");
+            System.out.println("DRAW");
+            win = true;
+            return win;
+        }
+
+        return win;
+    }
+
+    /*looks for three same symbols in a line for a potential win/block*/
+    //argument represents the computer creating a blocking/winning move
+    public boolean threeInRow(int arg) {
+        boolean win = false;
+
+        /*program scans through every potential winning line, keeping note
+        of the sum for symbol representation. If it comes across a sum of
+        three times the argument, computer plays the line*/
+        for(int[][] strategy : lines) {
+            int sum = 0;
+                
+            for(int[] index : strategy) 
+                sum += board[index[0]][index[1]][index[2]];
+
+            if(sum == 3 * arg) {
+                for(int[] undex : strategy) {
+                            if(board[undex[0]][undex[1]][undex[2]] == dash) {
+                                board[undex[0]][undex[1]][undex[2]] = comp;
+                                this.update();
+                                win = true;
+                                return win;
+                            }  
+                        }
+                    }
+                }  
+
+        return win;
+    }
+
+    /*a tree refers to a potential scenario where the user/computer creates
+    two rows of three with a single move*/
+    //argument represents the computer blocking/creating a tree
+    public boolean tree(int arg) {
+        boolean move = false;
+
+        for(int[][] strategy : lines) {
+            int sum = 0;
+
+            for(int[] index : strategy)
+                sum += board[index[0]][index[1]][index[2]];
+
+            if(sum == 2 * arg) {
+                int[][][] testboard = new int[4][4][4];
+
+            //creates a board replica to check future scenarios
+                for(int l = 3;  l >= 0; l--) {
+                    for(int m = 3; m >= 0; m--) {
+                        for(int n = 0; n < 4; n++)
+                            testboard[l][m][n] = board[l][m][n];
+                    }
+                }
+
+                /*loops through this line, testing a potential branch for each 
+                  empty space in line*/
+
+                for(int[] index : strategy) {
+                    int threeinrowX = 0, threeinrowO = 0;
+                    if (testboard[index[0]][index[1]][index[2]] == dash) {
+
+                        testboard[index[0]][index[1]][index[2]] = 5;
+                                
+                        /*all the potential winning lines are checked in the 
+                        test board see if two or more lines have three X's in a 
+                        row as a result of this one move modified test board*/
+                        for(int[][] testing : lines) {
+                            int testsum = 0;
+                            
+                            for(int[] test : testing)
+                                testsum += testboard[test[0]][test[1]][test[2]];
+                            
+                        
+                            //adding 2 "O"s and an "X" will be 1 + 1 + 5 = 7
+                            if (testsum == 7)
+                                threeinrowX += 1;
+                            else if (testsum == 15)
+                                threeinrowO += 1;
+                        }
+
+                        /*if, as a result of the test move, there are three in a
+                         row in at least two different lines, computer takes
+                         the move*/
+                        if(threeinrowX > 1 || threeinrowO > 1){
+                            board[index[0]][index[1]][index[2]] = 
+                            testboard[index[0]][index[1]][index[2]];
+                            this.update();
+                            move = true;
+                            return move;
+                        }
+                        
+                        /*if one/no lines have three in a row, the testboard
+                        point is reset and the loop continues*/
+                        else
+                            testboard[index[0]][index[1]][index[2]] = dash;
+                    }                        
+                }
+            }
+        }
+        return move;
+    }
+
+    //computer searches for two of its kind in a row
+    public boolean compTwoinRow() {
+        boolean move = false;
+
+        for(int[][] strategy : lines) {
+            int sum = 0;
+
+            for(int[] index : strategy)
+                sum += board[index[0]][index[1]][index[2]];
+
+            /*sum of two represents two in a row and the computer then chooses
+              an empty spot within that line*/
+            if(sum == 2 * comp) {
+                for(int[] undex : strategy) {
+                    if(board[undex[0]][undex[1]][undex[2]] == dash) {
+                        board[undex[0]][undex[1]][undex[2]] = comp;
+                        this.update();
+                        move = true;
+                        return move;
+                    }
+                }
+            }
+        }
+        return move;
+    }
+
+    //randomly creates a point on the board when no strategic moves can be found
+    public boolean lastResort() {
+        boolean move = false;
+        int movesleft = 0;
+
+        //keeps track of how many strategic moves have been looped through
+        for(int[][] str : lines) {
+            int sum = 0;
+            movesleft++;
+
+            for(int[] index : str)
+                sum += board[index[0]][index[1]][index[2]];
+            
+            boolean repeating = true;
+
+            /*the computer attempts to find a line with a sum of zero (i.e. all
+              the spaces are empty)*/
+            if(sum == dash) {
+                Random rnum1 = new Random();
+                int rand = rnum1.nextInt(4);
+                        
+                while(repeating) {                                        
+                    if(board[str[rand][0]][str[rand][1]][str[rand][2]] == dash){
+                        board[str[rand][0]][str[rand][1]][str[rand][2]] = comp;
+                        this.update();
+                        move = true;
+                        return move;
+                    }
+                }
+            }
+
+            /*if no strategy of any kind can be found, the computer plays the 
+            first empty cell it comes across*/
+            /*
+            else if(movesleft == 75) {
+                for(int[][] rows : board) {
+                    for(int[] cols : rows) {
+                        for(int point : cols)
+                        if(point == dash){
+                            point = comp;
+                            this.update();
+                            return move;
+                        }
+                    }
+                }
+            }   */ 
+        }
+
+        return move;
+    }
+
+    void draw() {
+        System.out.println("Computer cannot find a proper strategy");
+        System.out.println("DRAW");
+    }
+    
+    static final int player = 1, comp = 5, dash = 0;
+
+    /*3D array with the following parameters: 
+            lines[potential winning lines][cells][indices]*/
+    static final int[][][] lines = {
+    {{0,0,0},{0,0,1},{0,0,2},{0,0,3}},  //lev 0; row 0   rows in each lev
+    {{0,1,0},{0,1,1},{0,1,2},{0,1,3}},  //       row 1     
+    {{0,2,0},{0,2,1},{0,2,2},{0,2,3}},  //       row 2     
+    {{0,3,0},{0,3,1},{0,3,2},{0,3,3}},  //       row 3     
+    {{1,0,0},{1,0,1},{1,0,2},{1,0,3}},  //lev 1; row 0     
+    {{1,1,0},{1,1,1},{1,1,2},{1,1,3}},  //       row 1     
+    {{1,2,0},{1,2,1},{1,2,2},{1,2,3}},  //       row 2     
+    {{1,3,0},{1,3,1},{1,3,2},{1,3,3}},  //       row 3     
+    {{2,0,0},{2,0,1},{2,0,2},{2,0,3}},  //lev 2; row 0     
+    {{2,1,0},{2,1,1},{2,1,2},{2,1,3}},  //       row 1     
+    {{2,2,0},{2,2,1},{2,2,2},{2,2,3}},  //       row 2       
+    {{2,3,0},{2,3,1},{2,3,2},{2,3,3}},  //       row 3     
+    {{3,0,0},{3,0,1},{3,0,2},{3,0,3}},  //lev 3; row 0     
+    {{3,1,0},{3,1,1},{3,1,2},{3,1,3}},  //       row 1 
+    {{3,2,0},{3,2,1},{3,2,2},{3,2,3}},  //       row 2       
+    {{3,3,0},{3,3,1},{3,3,2},{3,3,3}},  //       row 3           
+    {{0,0,0},{0,1,0},{0,2,0},{0,3,0}},  //lev 0; col 0   cols in each lev
+    {{0,0,1},{0,1,1},{0,2,1},{0,3,1}},  //       col 1    
+    {{0,0,2},{0,1,2},{0,2,2},{0,3,2}},  //       col 2    
+    {{0,0,3},{0,1,3},{0,2,3},{0,3,3}},  //       col 3    
+    {{1,0,0},{1,1,0},{1,2,0},{1,3,0}},  //lev 1; col 0     
+    {{1,0,1},{1,1,1},{1,2,1},{1,3,1}},  //       col 1    
+    {{1,0,2},{1,1,2},{1,2,2},{1,3,2}},  //       col 2    
+    {{1,0,3},{1,1,3},{1,2,3},{1,3,3}},  //       col 3    
+    {{2,0,0},{2,1,0},{2,2,0},{2,3,0}},  //lev 2; col 0     
+    {{2,0,1},{2,1,1},{2,2,1},{2,3,1}},  //       col 1    
+    {{2,0,2},{2,1,2},{2,2,2},{2,3,2}},  //       col 2    
+    {{2,0,3},{2,1,3},{2,2,3},{2,3,3}},  //       col 3    
+    {{3,0,0},{3,1,0},{3,2,0},{3,3,0}},  //lev 3; col 0     
+    {{3,0,1},{3,1,1},{3,2,1},{3,3,1}},  //       col 1
+    {{3,0,2},{3,1,2},{3,2,2},{3,3,2}},  //       col 2
+    {{3,0,3},{3,1,3},{3,2,3},{3,3,3}},  //       col 3
+        {{0,0,0},{1,0,0},{2,0,0},{3,0,0}},  //cols in vert plane in front
+        {{0,0,1},{1,0,1},{2,0,1},{3,0,1}},
+        {{0,0,2},{1,0,2},{2,0,2},{3,0,2}},
+        {{0,0,3},{1,0,3},{2,0,3},{3,0,3}},
+        {{0,1,0},{1,1,0},{2,1,0},{3,1,0}},  //cols in vert plane one back
+        {{0,1,1},{1,1,1},{2,1,1},{3,1,1}},
+        {{0,1,2},{1,1,2},{2,1,2},{3,1,2}},
+        {{0,1,3},{1,1,3},{2,1,3},{3,1,3}},
+        {{0,2,0},{1,2,0},{2,2,0},{3,2,0}},  //cols in vert plane two back
+        {{0,2,1},{1,2,1},{2,2,1},{3,2,1}},
+        {{0,2,2},{1,2,2},{2,2,2},{3,2,2}},
+        {{0,2,3},{1,2,3},{2,2,3},{3,2,3}},
+        {{0,3,0},{1,3,0},{2,3,0},{3,3,0}},  //cols in vert plane in rear
+        {{0,3,1},{1,3,1},{2,3,1},{3,3,1}},
+        {{0,3,2},{1,3,2},{2,3,2},{3,3,2}},
+        {{0,3,3},{1,3,3},{2,3,3},{3,3,3}},
+        {{0,0,0},{0,1,1},{0,2,2},{0,3,3}},  //diags in lev 0
+    {{0,3,0},{0,2,1},{0,1,2},{0,0,3}},
+        {{1,0,0},{1,1,1},{1,2,2},{1,3,3}},  //diags in lev 1
+        {{1,3,0},{1,2,1},{1,1,2},{1,0,3}},
+        {{2,0,0},{2,1,1},{2,2,2},{2,3,3}},  //diags in lev 2
+        {{2,3,0},{2,2,1},{2,1,2},{2,0,3}},
+        {{3,0,0},{3,1,1},{3,2,2},{3,3,3}},  //diags in lev 3
+        {{3,3,0},{3,2,1},{3,1,2},{3,0,3}},
+        {{0,0,0},{1,0,1},{2,0,2},{3,0,3}},  //diags in vert plane in front
+        {{3,0,0},{2,0,1},{1,0,2},{0,0,3}},
+        {{0,1,0},{1,1,1},{2,1,2},{3,1,3}},  //diags in vert plane one back
+        {{3,1,0},{2,1,1},{1,1,2},{0,1,3}},
+        {{0,2,0},{1,2,1},{2,2,2},{3,2,3}},  //diags in vert plane two back
+        {{3,2,0},{2,2,1},{1,2,2},{0,2,3}},
+        {{0,3,0},{1,3,1},{2,3,2},{3,3,3}},  //diags in vert plane in rear
+        {{3,3,0},{2,3,1},{1,3,2},{0,3,3}},
+        {{0,0,0},{1,1,0},{2,2,0},{3,3,0}},  //diags left slice      
+        {{3,0,0},{2,1,0},{1,2,0},{0,3,0}},        
+        {{0,0,1},{1,1,1},{2,2,1},{3,3,1}},  //diags slice one to right
+        {{3,0,1},{2,1,1},{1,2,1},{0,3,1}},        
+        {{0,0,2},{1,1,2},{2,2,2},{3,3,2}},  //diags slice two to right      
+        {{3,0,2},{2,1,2},{1,2,2},{0,3,2}},        
+        {{0,0,3},{1,1,3},{2,2,3},{3,3,3}},  //diags right slice      
+        {{3,0,3},{2,1,3},{1,2,3},{0,3,3}},        
+        {{0,0,0},{1,1,1},{2,2,2},{3,3,3}},  //cube vertex diags
+        {{3,0,0},{2,1,1},{1,2,2},{0,3,3}},
+        {{0,3,0},{1,2,1},{2,1,2},{3,0,3}},
+        {{3,3,0},{2,2,1},{1,1,2},{0,0,3}}        
+    };
+}
